@@ -4,6 +4,7 @@ var pg = require('pg');
 var argv = require('optimist').argv;
 var geojson2osm = require('geojson2osm');
 var _ = require('underscore');
+var bodyParser = require('body-parser');
 var fs = require('fs');
 var client = new pg.Client(
 	"postgres://" + (argv.pguser || 'postgres') +
@@ -16,6 +17,13 @@ console.log('Running on: ' + url);
 var client = new pg.Client(client);
 var app = express();
 app.use(cors());
+
+app.use(bodyParser.urlencoded({
+	extended: true
+}));
+//app.use(express.bodyParser());
+
+
 client.connect(function(err) {
 	if (err) {
 		return console.error('could not connect to postgres', err);
@@ -38,6 +46,7 @@ app.get('/:id', function(req, res) {
 		} else {
 			try {
 				for (var i = 0; i < result.rows.length; i++) {
+					console.log(i);
 					var poly = {
 						"type": "Feature",
 						"properties": {},
@@ -47,11 +56,35 @@ app.get('/:id', function(req, res) {
 					poly.properties['node_id'] = parseInt(result.rows[i].node_id);
 					json.features.push(poly);
 				}
+				console.log(json);
 				res.json(json);
+
 			} catch (e) {
 				console.log("entering catch block2");
 			}
 		}
 	});
 });
+
+
+app.post('/endpoint', function(req, res) {
+	var obj = {};
+	var gid = JSON.parse(_.keys(req.body)[0]);
+	var query = {
+		text: 'UPDATE grid   SET status =true WHERE gid =$1;',
+		values: [gid.gid]
+	};
+
+	client.query(query, function(err, result) {
+		if (err) {
+			console.log("error en insertar" + err);
+		} else {
+			res.send(gid);
+		}
+
+	});
+});
+
+
+
 app.listen(process.env.PORT || 3019);
