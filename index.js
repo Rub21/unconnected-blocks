@@ -10,7 +10,7 @@ var client = new pg.Client(
 	"postgres://" + (argv.pguser || 'postgres') +
 	":" + (argv.pgpassword || '1234') +
 	"@" + (argv.pghost || 'localhost') +
-	"/" + (argv.pgdatabase || 'dbgrid')
+	"/" + (argv.pgdatabase || 'dbunconnected')
 );
 var url = "http://" + (argv.dbhost || 'localhost') + ":3019/";
 console.log('Running on: ' + url);
@@ -29,6 +29,34 @@ client.connect(function(err) {
 		return console.error('could not connect to postgres', err);
 	}
 });
+
+app.get('/', function(req, res) {
+	var json = {
+		"type": "FeatureCollection",
+		"features": []
+	};
+	var query = {
+		text: "SELECT gid , num FROM grid where status=$1",
+		values: [true]
+	};
+	client.query(query, function(error, result) {
+		if (error) {
+			res.statusCode = 404;
+			return res.send('Error 404: No quote found');
+		} else {
+			for (var i = 0; i < result.rows.length; i++) {
+				var poly = {};
+				// poly['num'] = result.rows[i].num;
+				// poly['gid'] = result.rows[i].gid;
+				json.features.push(result.rows[i].gid);
+			}
+			res.json(json);
+		}
+	});
+});
+
+
+
 app.get('/:id', function(req, res) {
 	var id = req.params.id;
 	var json = {
@@ -46,7 +74,6 @@ app.get('/:id', function(req, res) {
 		} else {
 			try {
 				for (var i = 0; i < result.rows.length; i++) {
-					console.log(i);
 					var poly = {
 						"type": "Feature",
 						"properties": {},
@@ -56,9 +83,7 @@ app.get('/:id', function(req, res) {
 					poly.properties['node_id'] = parseInt(result.rows[i].node_id);
 					json.features.push(poly);
 				}
-				console.log(json);
 				res.json(json);
-
 			} catch (e) {
 				console.log("entering catch block2");
 			}
@@ -74,7 +99,6 @@ app.post('/endpoint', function(req, res) {
 		text: 'UPDATE grid   SET status =true WHERE gid =$1;',
 		values: [gid.gid]
 	};
-
 	client.query(query, function(err, result) {
 		if (err) {
 			console.log("error en insertar" + err);
