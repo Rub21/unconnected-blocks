@@ -1,9 +1,5 @@
-var host = 'http://localhost:3019/';
-
-// var test = {'red':'#FF0000', 'blue':'#0000FF'};
-// delete test.blue; // or use => delete test['blue'];
-// console.log(test);
-
+//var host = 'http://localhost:3018/';
+var host = 'http://54.147.228.251:3018/';
 var block = {
   "type": "FeatureCollection",
   "features": []
@@ -28,9 +24,7 @@ $.ajax(host, {
     }, setTimeout(function() {
       draw();
     }, 500));
-
   }
-
 });
 
 L.mapbox.accessToken = 'pk.eyJ1IjoicnViZW4iLCJhIjoiYlBrdkpRWSJ9.JgDDxJkvDn3us36aGzR6vg';
@@ -99,8 +93,6 @@ function draw() {
         var data = {};
         data.gid = e.target.feature.properties.gid;
         $.ajax21(host + 'endpoint', data, function(res) {
-          console.log("ttttttttttttt");
-          console.log(e.target.feature.properties);
           e.target.feature.properties.num = 0
           statesLayer.resetStyle(e.target);
         });
@@ -108,7 +100,6 @@ function draw() {
       }
     });
   }
-
 }
 
 jQuery.ajax21 = function(purl, pdata, psuccess) {

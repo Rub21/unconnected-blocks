@@ -12,24 +12,19 @@ var client = new pg.Client(
 	"@" + (argv.pghost || 'localhost') +
 	"/" + (argv.pgdatabase || 'dbunconnected')
 );
-var url = "http://" + (argv.dbhost || 'localhost') + ":3019/";
+var url = "http://" + (argv.dbhost || 'localhost') + ":3018/";
 console.log('Running on: ' + url);
 var client = new pg.Client(client);
 var app = express();
 app.use(cors());
-
 app.use(bodyParser.urlencoded({
 	extended: true
 }));
-//app.use(express.bodyParser());
-
-
 client.connect(function(err) {
 	if (err) {
 		return console.error('could not connect to postgres', err);
 	}
 });
-
 app.get('/', function(req, res) {
 	var json = {
 		"type": "FeatureCollection",
@@ -54,9 +49,6 @@ app.get('/', function(req, res) {
 		}
 	});
 });
-
-
-
 app.get('/:id', function(req, res) {
 	var id = req.params.id;
 	var json = {
@@ -90,8 +82,6 @@ app.get('/:id', function(req, res) {
 		}
 	});
 });
-
-
 app.post('/endpoint', function(req, res) {
 	var obj = {};
 	var gid = JSON.parse(_.keys(req.body)[0]);
@@ -108,7 +98,4 @@ app.post('/endpoint', function(req, res) {
 
 	});
 });
-
-
-
-app.listen(process.env.PORT || 3019);
+app.listen(process.env.PORT || 3018);
